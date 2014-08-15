@@ -1,7 +1,7 @@
 var Q = require('q'),
     ArtistManager = require('./artistmanager.js').ArtistManager,
-    PlaylistManager = require('./PlaylistManager.js').PlaylistManager,
-    TrackManager = require('./TrackManager.js').TrackManager,
+    PlaylistManager = require('./playlistmanager.js').PlaylistManager,
+    TrackManager = require('./trackmanager.js').TrackManager,
     moods = require('./moods').moods,
     Player = require('player');
 
