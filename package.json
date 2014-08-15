@@ -1,0 +1,20 @@
+{
+  "name": "RadioPi",
+  "version": "0.1.0",
+  "description": "Play songs from a specific genre across a range of moods.",
+  "repository": "https://github.com/vinceallenvince/WebMoodRadio",
+  "main": "main.js",
+  "scripts": {
+    "test": "browserify test/*.js | testling"
+  },
+  "author": "Vince Allen",
+  "license": "ISC",
+  "dependencies": {
+    "echojs": "~0.1.4",
+    "spotify-web-api-node": "0.0.9",
+    "player": "~0.1.8",
+    "keypress": "~0.2.1",
+    "python-shell": "0.0.3",
+    "q": "~1.0.1"
+  }
+}

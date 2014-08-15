@@ -1,0 +1,8 @@
+####FOLDERS
+cache/*
+!cache/empty
+node_modules
+
+####FILES
+src/config.js
+steps.txt
