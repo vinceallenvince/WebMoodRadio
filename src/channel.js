@@ -96,6 +96,10 @@ Channel.prototype.getTracks = function(data) {
 
   var promises = [];
 
+  if (!data) { // TODO: threw an error; cannot read property 'songs' of undefined
+    return;
+  }
+
   this.fetching = true;
 
   for (var i = 0, max = data.songs.length; i < max; i++) {
