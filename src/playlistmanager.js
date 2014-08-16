@@ -78,10 +78,12 @@ PlaylistManager.prototype.handleCreatePlaylistSession = function(deferred, error
 
 /**
  * Requests a playlist from the EN playlist endpoint.
+ * @param {number} index A channel index.
+ * @return {Object} A promise.
  */
-PlaylistManager.prototype.getNextSongs = function() {
+PlaylistManager.prototype.getNextSongs = function(index) {
 
-  console.log('Getting new songs!');
+  console.log('Channel %d requesting %d new songs.', index, TOTAL_PLAYLIST_RESULTS);
 
   var deferred = Q.defer();
 
@@ -97,7 +99,8 @@ PlaylistManager.prototype.getNextSongs = function() {
 
 /**
  * Handles the EN get next songs request.
- * @param  {Object} err  An error object.
+ * @param  {Object} deferred A Q deferred.
+ * @param  {Object} error  An error object.
  * @param  {Object} json Data returned from the request.
  */
 PlaylistManager.prototype.handleGetNextSongs = function(deferred, error, json) {

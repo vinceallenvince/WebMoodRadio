@@ -26,6 +26,8 @@ function Channel(emitter, mood, index) {
   this.player = null;
   this.fetching = false;
   this.active = false;
+  this.totalTrackRequests = 0;
+  this.totalDownloads = 0;
 }
 
 Channel.prototype.init = function() {
@@ -86,7 +88,7 @@ Channel.prototype.playNextTrack = function() {
  */
 Channel.prototype.checkNextTrack = function(noTracks) {
   if (noTracks && !this.fetching) {
-    Q.fcall(this.playlistMgr.getNextSongs.bind(this.playlistMgr)).
+    Q.fcall(this.playlistMgr.getNextSongs.bind(this.playlistMgr, this.index)).
       fail(this.fail.bind(this)).
       done(this.getTracks.bind(this));
   }
@@ -96,7 +98,7 @@ Channel.prototype.getTracks = function(data) {
 
   var promises = [];
 
-  if (!data) { // TODO: threw an error; cannot read property 'songs' of undefined
+  if (!data) { // TODO: Add test.
     return;
   }
 
@@ -106,6 +108,7 @@ Channel.prototype.getTracks = function(data) {
     var song = data.songs[i];
     promises.push(this.trackMgr.getTrack(song));
   }
+  this.totalTrackRequests += max;
 
   var allPromise = Q.all(promises);
   allPromise.
@@ -115,19 +118,47 @@ Channel.prototype.getTracks = function(data) {
 };
 
 Channel.prototype.addTracks = function(data) {
+  var promises = [];
   for (var i = 0, max = data.length; i < max; i++) {
     if (data[i]) {
+      var deferred = Q.defer();
+      promises.push(deferred.promise);
       this.player.add(data[i]);
-      this.player.download(data[i], this.handleDownload.bind(this));
+      this.player.download(data[i], this.handleDownload.bind(this, deferred));
     }
   }
   this.fetching = false;
+
+  var allPromise = Q.all(promises);
+  allPromise.
+    then(this.logStats.bind(this)).
+    fail(this.fail.bind(this));
 };
 
-Channel.prototype.handleDownload = function(error, fileStream) {
+/**
+ * Handles download results.
+ * @param  {Object} error An error object.
+ * @param  {Object} poolStream A instance of PoolStream.
+ * @return {[type]}            [description]
+ */
+Channel.prototype.handleDownload = function(deferred, error, poolStream) {
   if (error) {
+    deferred.reject(error);
     this.fail(new Error(error));
+    return;
   }
+  deferred.resolve();
+  this.totalDownloads++;
+};
+
+Channel.prototype.logStats = function() {
+
+  var hour = 0, min = 0;
+
+  console.log('Stats for channel %d - %s.', this.index, this.mood.toUpperCase());
+  console.log('Total track requests: %d.', this.totalTrackRequests);
+  console.log('Total downloads: %d.', this.totalDownloads);
+  console.log('Total playing time: %d:%d', hour, min);
 };
 
 Channel.prototype.fail = function(error) {
