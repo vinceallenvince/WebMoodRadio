@@ -2,6 +2,7 @@ var config = require('./config').config,
     echojs = require('echojs'),
     moods = require('./moods').moods,
     Q = require('q'),
+    request = require('request'),
     Utils = require('./utils').Utils;
 
 var echo = echojs({
@@ -87,11 +88,17 @@ PlaylistManager.prototype.getNextSongs = function(index) {
 
   var deferred = Q.defer();
 
-  echo('playlist/dynamic/next').get({
-    format: 'json',
-    session_id: this.session_id,
-    results: TOTAL_PLAYLIST_RESULTS,
-    callback: Utils.bustClientCache()
+  request({
+    uri: 'http://developer.echonest.com/api/v4/playlist/dynamic/next',
+    method: 'GET',
+    timeout: 10000
+    qs: {
+      api_key: config.EN_API_KEY,
+      format: 'json',
+      session_id: this.session_id,
+      results: TOTAL_PLAYLIST_RESULTS,
+      callback: Utils.bustClientCache()
+    }
   }, this.handleGetNextSongs.bind(this, deferred));
 
   return deferred.promise;
@@ -103,7 +110,7 @@ PlaylistManager.prototype.getNextSongs = function(index) {
  * @param  {Object} error  An error object.
  * @param  {Object} json Data returned from the request.
  */
-PlaylistManager.prototype.handleGetNextSongs = function(deferred, error, json) {
+PlaylistManager.prototype.handleGetNextSongs = function(deferred, error, response, body) {
 
   if (error) {
     this.handleError(deferred, new Error(error));
@@ -111,7 +118,7 @@ PlaylistManager.prototype.handleGetNextSongs = function(deferred, error, json) {
   }
 
   deferred.resolve({
-    songs: json.response.songs
+    songs: JSON.parse(body).response.songs
   });
 };
 
