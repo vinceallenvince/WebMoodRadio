@@ -91,7 +91,7 @@ PlaylistManager.prototype.getNextSongs = function(index) {
   request({
     uri: 'http://developer.echonest.com/api/v4/playlist/dynamic/next',
     method: 'GET',
-    timeout: 10000
+    timeout: 10000,
     qs: {
       api_key: config.EN_API_KEY,
       format: 'json',
