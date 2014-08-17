@@ -26,8 +26,6 @@ function Channel(emitter, mood, index) {
   this.player = null;
   this.fetching = false;
   this.active = false;
-  this.totalTrackRequests = 0;
-  this.totalDownloads = 0;
 }
 
 Channel.prototype.init = function() {
@@ -45,6 +43,9 @@ Channel.prototype.init = function() {
 };
 
 Channel.ready = false;
+Channel.totalTrackRequests = 0;
+Channel.totalDownloads = 0;
+Channel.timeStart = 0;
 
 Channel.records = {
   list: [],
@@ -68,6 +69,7 @@ Channel.checkPreload = function(mood, initialTrack) {
 
   if (Channel.records.list.length === moods.length) {
     Channel.ready = true;
+    Channel.timeStart = new Date().getTime();
     this.emitter.emit('channelsReady');
     console.log('ALL READY!');
   }
@@ -108,7 +110,7 @@ Channel.prototype.getTracks = function(data) {
     var song = data.songs[i];
     promises.push(this.trackMgr.getTrack(song));
   }
-  this.totalTrackRequests += max;
+  Channel.totalTrackRequests += max;
 
   var allPromise = Q.all(promises);
   allPromise.
@@ -148,18 +150,22 @@ Channel.prototype.handleDownload = function(deferred, error, poolStream) {
     return;
   }
   deferred.resolve();
-  this.totalDownloads++;
+  Channel.totalDownloads++;
 };
 
 Channel.prototype.logStats = function() {
 
-  var hour = 0, min = 0;
+  var hour = 0, min = 0, now = new Date().getTime(), diff = now - Channel.timeStart;
 
-  console.log('Stats for channel %d - %s.', this.index, this.mood.toUpperCase());
-  console.log('Total track requests: %d.', this.totalTrackRequests);
-  console.log('Total downloads: %d.', this.totalDownloads);
-  console.log('Total playing time: %d:%d', hour, min);
+  console.log('Total track requests: %d.', Channel.totalTrackRequests);
+  console.log('Total downloads: %d.', Channel.totalDownloads);
+  console.log('Total playing sec: %d.', this.formatTimePlaying(diff));
 };
+
+Channel.prototype.formatTimePlaying = function(mill) {
+  var sec = Math.round(mill / 1000);
+  return sec;
+}
 
 Channel.prototype.fail = function(error) {
   console.error(error);
